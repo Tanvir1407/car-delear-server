@@ -10,7 +10,7 @@ app.use(express.json());
 
 async function run() {
     try {
-      
+      app.get('/okk')
   }
     finally {
         
