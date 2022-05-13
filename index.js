@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 require("dotenv").config();
 
@@ -27,14 +27,36 @@ async function run() {
       await client.connect();
       const carsCollection = client.db("warehouse").collection("cars");
       
-      //test
+      //Home page inventory api
       app.get('/cars', async (req, res) => {
         const query = {}
         const cursor = carsCollection.find(query);
         const cars = await cursor.limit(6).toArray();
         res.send(cars)
-      })
+      });
 
+      //all inventory
+      app.get('/inventory', async (req, res) => {
+        const query = {};
+        const cursor = carsCollection.find(query);
+        const inventory = await cursor.toArray();
+        res.send(inventory);
+      })
+      // get inventory info by id 
+      app.get("/inventory/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await carsCollection.findOne(query);
+        res.send(result);
+      })
+      // get quantity 
+      app.get('/delivered/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await carsCollection.findOne(query);
+        const carQuantity = result.quantity;
+        res.send({carQuantity});
+      })
   }
     finally {
         
