@@ -34,7 +34,13 @@ async function run() {
         const cars = await cursor.limit(6).toArray();
         res.send(cars)
       });
-
+      //add inventory
+      app.post('/inventory', async (req, res) => {
+        const newItem = req.body;
+        console.log(newItem);
+        const result = await carsCollection.insertOne(newItem);
+        res.send(result)
+      })
       //all inventory
       app.get('/inventory', async (req, res) => {
         const query = {};
@@ -42,7 +48,7 @@ async function run() {
         const inventory = await cursor.toArray();
         res.send(inventory);
       })
-      // get inventory info by id 
+      // get inventory by id 
       app.get("/inventory/:id", async (req, res) => {
         const id = req.params.id;
         const query = { _id: ObjectId(id) };
