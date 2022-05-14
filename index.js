@@ -61,17 +61,37 @@ async function run() {
       app.put('/update/:id', async (req, res) => {
         const id = req.params.id;
         const updateQuantity = req.body;
-        const newQuantity = updateQuantity.carQuantity - 1;
+        const newQuantity = updateQuantity.Quantity-1
         const filter = { _id: ObjectId(id) };
         const options = { upsert: true };
         const updateDoc = {
           $set: {
-            quantity: newQuantity
-          }
+            quantity: newQuantity,
+          },
         };
         const result = await carsCollection.updateOne(filter, updateDoc, options);
         res.send(result);
       })
+      //insert quantity
+      app.put("/insert/:id", async (req, res) => {
+        const id = req.params.id;
+        const insertQuantity = req.body;
+        const quantity = insertQuantity.Quantity
+        console.log(quantity)
+        const filter = { _id: ObjectId(id) };
+        const options = { upsert: true };
+        const updateDoc = {
+          $set: {
+            quantity: quantity,
+          },
+        };
+        const result = await carsCollection.updateOne(
+          filter,
+          updateDoc,
+          options
+        );
+        res.send(result);
+      });
   }
     finally {
         
