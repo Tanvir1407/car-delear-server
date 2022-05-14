@@ -37,7 +37,6 @@ async function run() {
       //add inventory
       app.post('/inventory', async (req, res) => {
         const newItem = req.body;
-        console.log(newItem);
         const result = await carsCollection.insertOne(newItem);
         res.send(result)
       })
@@ -52,6 +51,7 @@ async function run() {
       app.get("/inventory/:id", async (req, res) => {
         const id = req.params.id;
         const query = { _id: ObjectId(id) };
+        console.log(query);
         const result = await carsCollection.findOne(query);
         res.send(result);
       })
@@ -98,6 +98,23 @@ async function run() {
         );
         res.send(result);
       });
+      //Delete inventory item
+      app.delete('/delete/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await carsCollection.deleteOne(query);
+        res.send(result);
+      })
+      // get data by email 
+      app.get('/myitem', async (req, res) => {
+        const email = req.query.email;
+        console.log(email)
+        const query = { email: String(email) };
+        console.log(query);
+        const result = carsCollection.find(query);
+        res.send(result);
+        
+      })
   }
     finally {
         
