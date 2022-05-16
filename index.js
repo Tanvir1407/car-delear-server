@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-
 require("dotenv").config();
 
 const port = process.env.PORT || 5000;
@@ -11,7 +11,23 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return 
+  }
+  const token = authHeader.split(" ")[1];
 
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decode) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log(decode)
+  });
+  
+  next()
+}
 
 const uri =
   `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.3ohgy.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -27,6 +43,14 @@ async function run() {
       await client.connect();
       const carsCollection = client.db("warehouse").collection("cars");
       
+      //auth
+      app.post('/login', async (req, res) => {
+        const user = req.body;
+        const accessToken = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET, {
+          expiresIn: "2d",
+        });
+        res.send({accessToken})
+      })
       //Home page inventory api
       app.get('/cars', async (req, res) => {
         const query = {}
@@ -51,7 +75,6 @@ async function run() {
       app.get("/inventory/:id", async (req, res) => {
         const id = req.params.id;
         const query = { _id: ObjectId(id) };
-        console.log(query);
         const result = await carsCollection.findOne(query);
         res.send(result);
       })
@@ -106,12 +129,10 @@ async function run() {
         res.send(result);
       })
       // get data by email 
-      app.get('/myitem', async (req, res) => {
+      app.get('/myitem',verifyJWT, async (req, res) => {
         const email = req.query.email;
-        console.log(email)
-        const query = { email: String(email) };
-        console.log(query);
-        const result = carsCollection.find(query);
+        const query = {email:email};
+        const result = await carsCollection.find(query).toArray();
         res.send(result);
         
       })
@@ -123,9 +144,6 @@ async function run() {
 
 run().catch(console.dir);
 
-//check
-app.get("/", (req, res) => {
-  res.send("assignment check");
-});
+
 
 app.listen(port);
